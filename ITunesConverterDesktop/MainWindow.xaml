@@ -1,0 +1,22 @@
+﻿<Window x:Class="ITunesConverterDesktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ITunes Store Image Converter" Height="350" Width="525">
+    <DockPanel LastChildFill="False">
+        <TextBlock DockPanel.Dock="Top" Text="Select a source directory where the images you want to resize are stored" Margin="5"/>
+        
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+            <TextBox Text="{Binding SourceDir}" Width="400"/>
+            <Button Content="..." Command="{Binding SourceDirBrowse}" Width="40" Margin="5,0,0,0"/>            
+        </StackPanel>        
+        
+        <TextBlock DockPanel.Dock="Top" Text="Select a destination directory where the resized images will be saved." Margin="5"/>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+            <TextBox Text="{Binding DestDir}" Width="400"/>
+            <Button Content="..." Command="{Binding DestDirBrowse}" Width="40" Margin="5,0,0,0"/>
+        </StackPanel>
+        
+        <Button Content="Process" Command="{Binding ProcessImages}" Width="100" Height="25" VerticalAlignment="Top" Margin="5"/>
+    </DockPanel>
+</Window>
