@@ -17,30 +17,46 @@ namespace ITunesConverterDesktop
         public event PropertyChangedEventHandler PropertyChanged;
         private string sourceDir;
         private string destDir;
-
-        public string SourceDir
-        {
-            get { return this.sourceDir; }
-            set { if (this.sourceDir != value) { this.sourceDir = value; OnPropertyChanged("SourceDir"); } }
-        }        
-
-        public string DestDir
-        {
-            get { return this.destDir; }
-            set { if (this.destDir != value) { this.destDir = value; OnPropertyChanged("DestDir"); } }
-        }                
-
-        public RelayCommand SourceDirBrowse { get; private set; }
-        public RelayCommand DestDirBrowse { get; private set; }
-        public RelayCommand ProcessImages { get; private set; }
+        private bool showHQOption;
+        private bool showStausBarOptions;
 
         public VM()
         {
             this.SourceDirBrowse = new RelayCommand(OnBrowseForSourceDirectory);
             this.DestDirBrowse = new RelayCommand(OnBrowseForDestDirectory);
             this.ProcessImages = new RelayCommand(OnProcessImages);
-
+            this.CurrentOptions = new OutputOptions { HQ = true, IncludeStatusBarArea = true, Landscape = true, Include35 = true, Include4 = true, Include47 = true, Include55 = true };
+            this.ShowStatusBarOption = true;
+            this.ShowHQOption = false; 
+            this.CurrentOptions.PropertyChanged += CurrentOptions_PropertyChanged;
             this.PropertyChanged += VM_PropertyChanged;
+        }
+
+        void CurrentOptions_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "IncludeMac":
+                case "IncludeIPad":
+                    if (this.CurrentOptions.IncludeMac || this.CurrentOptions.IncludeIPad)
+                    {
+                        this.ShowHQOption = true;
+                        this.ShowStatusBarOption = true;
+                    }
+                    else
+                    {
+                        this.ShowHQOption = false;
+                        this.ShowStatusBarOption = false;
+                    }
+                    break;
+              
+                case "Include35":
+                case "Include4":
+                    if (this.CurrentOptions.Include35 || this.CurrentOptions.Include4)
+                        this.ShowStatusBarOption = true;
+                    else this.ShowStatusBarOption = false;
+                    break;
+            }
         }
 
         void VM_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -61,6 +77,7 @@ namespace ITunesConverterDesktop
             try
             {
                 Converter converter = new Converter();
+                converter.Options = this.CurrentOptions; 
                 converter.SourceDir = this.SourceDir;
                 converter.DestDir = this.DestDir;
                 converter.Convert();
@@ -107,5 +124,35 @@ namespace ITunesConverterDesktop
             if (h != null)
                 h(this, new PropertyChangedEventArgs(name));
         }
+
+        public RelayCommand SourceDirBrowse { get; private set; }
+        public RelayCommand DestDirBrowse { get; private set; }
+        public RelayCommand ProcessImages { get; private set; }
+        public OutputOptions CurrentOptions { get; private set; }        
+
+        public string SourceDir
+        {
+            get { return this.sourceDir; }
+            set { if (this.sourceDir != value) { this.sourceDir = value; OnPropertyChanged("SourceDir"); } }
+        }
+
+        public string DestDir
+        {
+            get { return this.destDir; }
+            set { if (this.destDir != value) { this.destDir = value; OnPropertyChanged("DestDir"); } }
+        }
+    
+        public bool ShowHQOption
+        {
+            get { return this.showHQOption; }
+            set { if (this.showHQOption != value) { this.showHQOption = value; OnPropertyChanged("ShowHQOption"); } }
+        }        
+
+        public bool ShowStatusBarOption
+        {
+            get { return this.showStausBarOptions; }
+            set { if (this.showStausBarOptions != value) { this.showStausBarOptions = value; OnPropertyChanged("ShowStatusBarOption"); } }
+        }
+
     }
 }

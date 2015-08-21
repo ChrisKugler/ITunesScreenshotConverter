@@ -13,18 +13,15 @@ namespace ITunesConverter
     public class Converter
     {
         public static readonly string[] validExtensions = new string[] { ".png", ".jpg", ".jpeg" };
-        private Dictionary<string, Size> resolutions = new Dictionary<string, Size> { 
-            {"5.5", new Size { Width = 2208, Height = 1242 } }, 
-            {"4.7", new Size { Width = 1334, Height = 750 } }, 
-            {"4", new Size { Width = 1136, Height = 640 } }, 
-            {"3.5", new Size { Width = 960, Height = 600 } },
-            {"ipad", new Size { Width = 2048, Height = 1536 } },
-            {"mac", new Size { Width = 2880, Height = 1800 } }
-        };
-
-        public string SourceDir { get; set; }
-        public string DestDir { get; set; }
-
+        //private Dictionary<string, Size> resolutions = new Dictionary<string, Size> { 
+        //    {"5.5", new Size { Width = 2208, Height = 1242 } }, 
+        //    {"4.7", new Size { Width = 1334, Height = 750 } }, 
+        //    {"4", new Size { Width = 1136, Height = 640 } }, 
+        //    {"3.5", new Size { Width = 960, Height = 600 } },
+        //    {"ipad", new Size { Width = 2048, Height = 1536 } },
+        //    {"mac", new Size { Width = 2880, Height = 1800 } }
+        //};
+      
         public void Convert()
         {
             this.Validate();
@@ -32,9 +29,9 @@ namespace ITunesConverter
             if (!Directory.Exists(DestDir))
                 Directory.CreateDirectory(DestDir);
             
-            foreach (string key in this.resolutions.Keys)            
-                if (!Directory.Exists(Path.Combine(this.DestDir, key)))
-                    Directory.CreateDirectory(Path.Combine(this.DestDir, key)); 
+            //foreach (string key in this.resolutions.Keys)            
+            //    if (!Directory.Exists(Path.Combine(this.DestDir, key)))
+            //        Directory.CreateDirectory(Path.Combine(this.DestDir, key)); 
 
             string[] files = Directory.GetFiles(this.SourceDir);
 
@@ -45,11 +42,14 @@ namespace ITunesConverter
                 {
                     using (Image img = Image.FromFile(file))
                     {
-                        foreach (var kvp in this.resolutions)
-                        {
-                            int width = img.Height < img.Width ? kvp.Value.Width : kvp.Value.Height; 
-                            int height = img.Height < img.Width ? kvp.Value.Height : kvp.Value.Width; 
-                            using (Bitmap bmp = this.ResizeImage(img, width, height))
+                        this.Options.Landscape = img.Width > img.Height;
+                        var resolutions = ITunesResolutionFactory.Create(this.Options); 
+                        foreach (var kvp in resolutions)
+                        {            
+                            if(!Directory.Exists(Path.Combine(this.DestDir, kvp.Key)))
+                                Directory.CreateDirectory(Path.Combine(this.DestDir, kvp.Key)); 
+
+                            using (Bitmap bmp = this.ResizeImage(img, kvp.Value.Width, kvp.Value.Height))
                             {
                                 string destFile = Path.Combine(this.DestDir, kvp.Key, fileInfo.Name);
                                 Console.WriteLine(destFile);
@@ -93,11 +93,17 @@ namespace ITunesConverter
                 throw new ArgumentException("SourceDir not provided");
             if(string.IsNullOrWhiteSpace(this.DestDir))
                 throw new ArgumentException("DestDir not provided");
-
+            if(this.Options == null)
+                throw new ArgumentException("Output options not provided");
             if(!Directory.Exists(this.SourceDir))
                 throw new ArgumentException("SourceDir doesn't exist.");
             if(Directory.GetFiles(this.SourceDir).Length == 0)
                 throw new ArgumentException("SourceDir contains 0 files.");
         }
+
+        public OutputOptions Options { get; set; }  
+        public string SourceDir { get; set; }
+        public string DestDir { get; set; }
+
     }
 }
